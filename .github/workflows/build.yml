@@ -1,0 +1,81 @@
+name: Build apps
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Prepare platforms
+        run: PLATFORMS=android,macos bash scripts/prepare_platforms.sh
+      - name: Analyze
+        continue-on-error: true
+        run: flutter analyze
+      - name: Test
+        continue-on-error: true
+        run: flutter test
+      - name: Build APK
+        run: flutter build apk --release
+      - name: Rename
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/KonverzoMail.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KonverzoMail-apk
+          path: dist/KonverzoMail.apk
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Prepare platforms
+        run: PLATFORMS=android,macos bash scripts/prepare_platforms.sh
+      - name: Build macOS app
+        run: flutter build macos --release
+      - name: Create DMG
+        run: |
+          APP=$(find build/macos/Build/Products/Release -maxdepth 1 -name '*.app' | head -n 1)
+          STAGE=$(mktemp -d)
+          cp -R "$APP" "$STAGE/"
+          ln -s /Applications "$STAGE/Applications"
+          mkdir -p dist
+          hdiutil create -volname "Konverzo Mail" -srcfolder "$STAGE" -ov -format UDZO dist/KonverzoMail.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KonverzoMail-dmg
+          path: dist/KonverzoMail.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/KonverzoMail.apk
+            dist/KonverzoMail.dmg
