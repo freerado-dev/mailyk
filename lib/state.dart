@@ -245,7 +245,7 @@ class AppState extends ChangeNotifier {
     final list = conversations;
     if (list.isEmpty) return;
     var idx = list.indexWhereSafe(selectedContact);
-    idx = idx < 0 ? 0 : (idx + delta).clamp(0, list.length - 1);
+    idx = idx < 0 ? 0 : (idx + delta).clamp(0, list.length - 1).toInt();
     select(list[idx].contactEmail);
   }
 
@@ -261,7 +261,7 @@ class AppState extends ChangeNotifier {
   }
 
   void setListWidth(double w) {
-    listWidth = w.clamp(300.0, 520.0);
+    listWidth = w.clamp(300.0, 520.0).toDouble();
     notifyListeners();
   }
 
