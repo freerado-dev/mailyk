@@ -147,12 +147,12 @@ class _MasterDetail extends StatelessWidget {
     var resizable = true;
     if (fold.book) {
       // zoznam presne vľavo od ohybu, vlákno vpravo od neho
-      listW = (fold.bounds.left - sidebarW).clamp(260.0, width);
+      listW = (fold.bounds.left - sidebarW).clamp(260.0, width).toDouble();
       gap = math.max(fold.bounds.width, 1);
       resizable = false;
     } else {
       final maxList = math.max(300.0, width - sidebarW - 380);
-      listW = state.listWidth.clamp(300.0, maxList);
+      listW = state.listWidth.clamp(300.0, maxList).toDouble();
     }
 
     return Scaffold(

@@ -102,7 +102,7 @@ class _ThreadViewState extends State<ThreadView> {
     final msgs = widget.conversation.messages;
     final dark = Theme.of(context).brightness == Brightness.dark;
     return LayoutBuilder(builder: (context, c) {
-      final maxBubble = (c.maxWidth * 0.74).clamp(240.0, 640.0);
+      final maxBubble = (c.maxWidth * 0.74).clamp(240.0, 640.0).toDouble();
       return Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -174,7 +174,8 @@ class _ThreadViewState extends State<ThreadView> {
 
     // Flex režim: horná polovica = vlákno, dolná = rýchle odpovede a písanie.
     final screenH = MediaQuery.of(context).size.height;
-    final top = flex.top.clamp(160.0, math.max(160.0, screenH - 200));
+    final top =
+        flex.top.clamp(160.0, math.max(160.0, screenH - 200)).toDouble();
     return Column(
       children: [
         SizedBox(
